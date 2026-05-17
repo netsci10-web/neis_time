@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>초등학교 시간표 검색기 (NEIS & 학교알리미 연계)</title>
+    <title>초등학교 시간표 검색기 (NEIS 연계)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -63,8 +63,22 @@
                 <i class="fa-solid fa-sliders text-indigo-500"></i> 정보 상세 검색 조건
             </h3>
             
-            <form id="searchForm" onsubmit="event.preventDefault(); applyFilters();" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+            <form id="searchForm" onsubmit="event.preventDefault(); applyFilters();" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4">
                 
+                <!-- 지역 선택 -->
+                <div class="flex flex-col gap-1.5 lg:col-span-1">
+                    <label class="text-xs font-semibold text-slate-500">지역</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-map-location-dot absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <select id="regionSelect" onchange="handleRegionChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 transition appearance-none">
+                            <option value="창원">창원</option>
+                            <option value="마산" selected>마산</option>
+                            <option value="진해">진해</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+                    </div>
+                </div>
+
                 <!-- 학교 선택 -->
                 <div class="lg:col-span-2 flex flex-col gap-1.5">
                     <label class="text-xs font-semibold text-slate-500">학교명</label>
@@ -276,32 +290,44 @@
         /* ==============================================
          * 1. 상태 및 상수 데이터 관리
          * ============================================== */
-        // 마산 지역(합포구, 회원구) 초등학교 전체 목록 (가나다 순 정렬)
-        const MASAN_SCHOOL_NAMES = [
-            "가고파초등학교", "가포초등학교", "감천초등학교", "광려초등학교", "교동초등학교",
-            "교방초등학교", "구산초등학교", "구산초등학교구서분교장", "구암초등학교", "내서초등학교",
-            "마산고운초등학교", "마산신월초등학교", "마산중앙초등학교", "무학초등학교", "반동초등학교", 
-            "봉덕초등학교", "북성초등학교", "산호초등학교", "삼계초등학교", "상남초등학교", 
-            "상일초등학교", "석전초등학교", "성호초등학교", "안계초등학교", "양덕초등학교", 
-            "완월초등학교", "용마초등학교", "우산초등학교", "월성초등학교", "월영초등학교", 
-            "월포초등학교", "전안초등학교", "중리초등학교", "진동초등학교", "진전초등학교", 
-            "팔룡초등학교", "하북초등학교", "합성초등학교", "합포초등학교", "해운초등학교",
-            "현동초등학교", "호계초등학교", "회원초등학교"
-        ].sort();
+        const REGIONS = {
+            "창원": [
+                "가음초등학교", "감계초등학교", "남양초등학교", "남정초등학교", "내동초등학교", "대방초등학교", "대암초등학교", "대원초등학교", 
+                "도계초등학교", "동산초등학교", "명곡초등학교", "명서초등학교", "명지초등학교", "무동초등학교", "반송초등학교", "반지초등학교", 
+                "북면초등학교", "사파초등학교", "삼정자초등학교", "상남초등학교", "성주초등학교", "소답초등학교", "신월초등학교", "안남초등학교", 
+                "안민초등학교", "양곡초등학교", "외동초등학교", "용지초등학교", "용호초등학교", "우암초등학교", "웅남초등학교", "유목초등학교", 
+                "일동초등학교", "중동초등학교", "중앙초등학교", "창원초등학교", "토월초등학교", "평산초등학교", "하천초등학교", "화양초등학교", "용남초등학교"
+            ].sort(),
+            "마산": [
+                "가고파초등학교", "가포초등학교", "감천초등학교", "광려초등학교", "교동초등학교", "교방초등학교", "구산초등학교", "구산초등학교구서분교장", 
+                "구암초등학교", "내서초등학교", "마산고운초등학교", "마산신월초등학교", "마산중앙초등학교", "무학초등학교", "반동초등학교", "봉덕초등학교", 
+                "북성초등학교", "산호초등학교", "삼계초등학교", "상남초등학교", "상일초등학교", "석전초등학교", "성호초등학교", "안계초등학교", "양덕초등학교", 
+                "완월초등학교", "용마초등학교", "우산초등학교", "월성초등학교", "월영초등학교", "월포초등학교", "전안초등학교", "중리초등학교", "진동초등학교", 
+                "진전초등학교", "팔룡초등학교", "하북초등학교", "합성초등학교", "합포초등학교", "해운초등학교", "현동초등학교", "호계초등학교", "회원초등학교"
+            ].sort(),
+            "진해": [
+                "경화초등학교", "남산초등학교", "냉천초등학교", "대야초등학교", "덕산초등학교", "도천초등학교", "동부초등학교", "석동초등학교", 
+                "안골포초등학교", "안청초등학교", "용원초등학교", "웅동초등학교", "웅천초등학교", "자은초등학교", "장복초등학교", "제황초등학교", 
+                "진해중앙초등학교", "충무초등학교", "풍호초등학교"
+            ].sort()
+        };
 
-        // 이름을 기반으로 SCHOOLS_DB 자동 생성 (학교 코드는 API로 자동 탐색됨)
+        // 지역과 이름을 조합한 키로 SCHOOLS_DB 자동 생성
         const SCHOOLS_DB = {};
-        MASAN_SCHOOL_NAMES.forEach(name => {
-            SCHOOLS_DB[name] = { 
-                officeCode: "S10", // 경상남도 교육청
-                schoolCode: "",    // ensureSchoolCode 함수를 통해 자동 보정됨
-                name: name, 
-                region: "경남", 
-                resolved: false 
-            };
-        });
+        for (const [regionName, schools] of Object.entries(REGIONS)) {
+            schools.forEach(name => {
+                SCHOOLS_DB[`${regionName}_${name}`] = { 
+                    officeCode: "S10", 
+                    schoolCode: "",    
+                    name: name, 
+                    region: regionName, 
+                    resolved: false 
+                };
+            });
+        }
 
         const state = {
+            region: "마산",
             school: "마산중앙초등학교",
             year: "2025",
             semester: "1",
@@ -427,7 +453,7 @@
                 return;
             }
             try {
-                const s = SCHOOLS_DB["마산중앙초등학교"];
+                const s = SCHOOLS_DB[`${state.region}_${state.school}`];
                 // 검색 명칭(SCHUL_NM)으로 연동 테스트를 진행하여 하드코딩 코드 불일치 오류 우회
                 const url = `https://open.neis.go.kr/hub/schoolInfo?KEY=${state.apiKey}&Type=json&pIndex=1&pSize=1&ATPT_OFCDC_SC_CODE=${s.officeCode}&SCHUL_NM=${encodeURIComponent(s.name)}`;
                 
@@ -444,7 +470,7 @@
                     setApiStatus(true);
                     if (forceRefresh) {
                         showToast("API 서버와 정상적으로 연동되었습니다.", "success");
-                        await ensureSchoolCode(state.school);
+                        await ensureSchoolCode(state.region, state.school);
                         await updateClassDropdownUI();
                         renderTimetable();
                     }
@@ -462,17 +488,28 @@
          * ============================================== */
          
         // 학교 표준코드 동적 보정 (API 조회 실패 방지용)
-        async function ensureSchoolCode(schoolName) {
+        async function ensureSchoolCode(region, schoolName) {
             if (!state.apiKey) return;
-            const school = SCHOOLS_DB[schoolName];
+            const school = SCHOOLS_DB[`${region}_${schoolName}`];
             if (!school || school.resolved) return;
 
-            const url = `https://open.neis.go.kr/hub/schoolInfo?KEY=${state.apiKey}&Type=json&pIndex=1&pSize=1&ATPT_OFCDC_SC_CODE=${school.officeCode}&SCHUL_NM=${encodeURIComponent(school.name)}`;
+            // 중복된 이름(예: 상남초등학교)을 구별하기 위해 넉넉하게 불러옴
+            const url = `https://open.neis.go.kr/hub/schoolInfo?KEY=${state.apiKey}&Type=json&pIndex=1&pSize=10&ATPT_OFCDC_SC_CODE=${school.officeCode}&SCHUL_NM=${encodeURIComponent(school.name)}`;
             try {
                 const response = await fetch(url);
                 const data = await response.json();
                 if (data.schoolInfo && data.schoolInfo[1] && data.schoolInfo[1].row) {
-                    school.schoolCode = data.schoolInfo[1].row[0].SD_SCHUL_CODE;
+                    const rows = data.schoolInfo[1].row;
+                    let matchedRow = rows[0]; // 기본 매칭
+                    
+                    for (let row of rows) {
+                        const addr = row.ORG_RDNMA || "";
+                        if (region === "마산" && addr.includes("마산")) { matchedRow = row; break; }
+                        if (region === "진해" && addr.includes("진해")) { matchedRow = row; break; }
+                        if (region === "창원" && !addr.includes("마산") && !addr.includes("진해")) { matchedRow = row; break; }
+                    }
+                    
+                    school.schoolCode = matchedRow.SD_SCHUL_CODE;
                     school.resolved = true;
                 }
             } catch (e) {
@@ -483,7 +520,7 @@
         // NEIS 1: 시간표
         async function fetchNeisTimetable(year, sem, dateStr, grade, classNm) {
             if (!state.apiKey || !classNm) return null;
-            const schoolInfo = SCHOOLS_DB[state.school] || SCHOOLS_DB["마산중앙초등학교"];
+            const schoolInfo = SCHOOLS_DB[`${state.region}_${state.school}`];
             const formattedYmd = dateStr.replace(/-/g, "");
             const requestUrl = `https://open.neis.go.kr/hub/elsTimetable?KEY=${state.apiKey}&Type=json&pIndex=1&pSize=100&ATPT_OFCDC_SC_CODE=${schoolInfo.officeCode}&SD_SCHUL_CODE=${schoolInfo.schoolCode}&AY=${year}&SEM=${sem}&ALL_TI_YMD=${formattedYmd}&GRADE=${grade}&CLASS_NM=${classNm}`;
             try {
@@ -505,7 +542,7 @@
         // NEIS 2: 학교 기본정보
         async function fetchNeisSchoolInfoAPI() {
             if (!state.apiKey) return null;
-            const schoolInfo = SCHOOLS_DB[state.school] || SCHOOLS_DB["마산중앙초등학교"];
+            const schoolInfo = SCHOOLS_DB[`${state.region}_${state.school}`];
             const requestUrl = `https://open.neis.go.kr/hub/schoolInfo?KEY=${state.apiKey}&Type=json&pIndex=1&pSize=1&ATPT_OFCDC_SC_CODE=${schoolInfo.officeCode}&SD_SCHUL_CODE=${schoolInfo.schoolCode}`;
             try {
                 const response = await fetch(requestUrl);
@@ -562,7 +599,7 @@
          * ============================================== */
 
         async function updateClassDropdownUI() {
-            const schoolCodeInfo = SCHOOLS_DB[document.getElementById("schoolSelect").value] || SCHOOLS_DB["마산중앙초등학교"];
+            const schoolCodeInfo = SCHOOLS_DB[`${state.region}_${state.school}`];
             const year = document.getElementById("yearSelect").value;
             const grade = document.getElementById("gradeSelect").value;
             const classSelect = document.getElementById("classSelect");
@@ -615,11 +652,11 @@
                 const col = document.createElement("div");
                 col.className = "flex flex-col gap-2 min-w-[110px]";
                 
-                const isToday = dayInfo.dateStr === getFormattedDate(new Date());
-                const headerBg = isToday ? "bg-indigo-600 text-white shadow-md" : "bg-slate-100 text-slate-700";
+                const isSelectedDate = dayInfo.dateStr === state.date;
+                const headerBg = isSelectedDate ? "bg-indigo-600 text-white shadow-md ring-2 ring-indigo-300 ring-offset-1" : "bg-slate-100 text-slate-700";
                 
                 col.innerHTML = `
-                    <div class="${headerBg} rounded-xl p-2 sm:p-3 text-center border ${isToday ? 'border-indigo-600' : 'border-slate-200'}">
+                    <div class="${headerBg} rounded-xl p-2 sm:p-3 text-center border ${isSelectedDate ? 'border-indigo-600' : 'border-slate-200'}">
                         <p class="font-extrabold text-sm sm:text-base">${dayInfo.dayName}요일</p>
                         <p class="text-[10px] sm:text-xs font-medium opacity-80 mt-0.5">${dayInfo.dateStr.substring(5).replace('-','.')}</p>
                     </div>
@@ -679,6 +716,27 @@
         /* ==============================================
          * 6. 이벤트 컨트롤러
          * ============================================== */
+         
+        function populateSchoolSelect(region) {
+            const schoolSelect = document.getElementById("schoolSelect");
+            schoolSelect.innerHTML = "";
+            REGIONS[region].forEach(name => {
+                const opt = document.createElement("option");
+                opt.value = name;
+                opt.innerText = name;
+                schoolSelect.appendChild(opt);
+            });
+        }
+
+        async function handleRegionChange() {
+            state.region = document.getElementById("regionSelect").value;
+            populateSchoolSelect(state.region);
+            state.school = document.getElementById("schoolSelect").value; // 자동 첫 번째 학교 선택
+            await ensureSchoolCode(state.region, state.school);
+            await updateClassDropdownUI();
+            showToast(`[${state.region}] 지역으로 변경되었습니다.`, "info");
+            await renderTimetable();
+        }
 
         async function handleGradeChange() {
             state.grade = document.getElementById("gradeSelect").value;
@@ -695,7 +753,7 @@
 
         async function handleSchoolChange() {
             state.school = document.getElementById("schoolSelect").value;
-            await ensureSchoolCode(state.school);
+            await ensureSchoolCode(state.region, state.school);
             await updateClassDropdownUI(); 
             showToast(`[${state.school}] 학교로 변경되었습니다.`, "info");
             await renderTimetable();
@@ -739,12 +797,13 @@
         }
 
         async function applyFilters() {
+            state.region = document.getElementById("regionSelect").value;
             state.school = document.getElementById("schoolSelect").value;
             state.year = document.getElementById("yearSelect").value;
             state.semester = document.getElementById("semesterSelect").value;
             state.grade = document.getElementById("gradeSelect").value;
             
-            await ensureSchoolCode(state.school);
+            await ensureSchoolCode(state.region, state.school);
             await updateClassDropdownUI(); 
             state.class = document.getElementById("classSelect").value;
 
@@ -839,16 +898,10 @@
 
         // 초기화
         window.onload = async function() {
-            // 셀렉트 박스에 마산 전체 초등학교 43개 목록 동적 주입
-            const schoolSelect = document.getElementById("schoolSelect");
-            schoolSelect.innerHTML = "";
-            MASAN_SCHOOL_NAMES.forEach(name => {
-                const opt = document.createElement("option");
-                opt.value = name;
-                opt.innerText = `${name} (마산)`;
-                schoolSelect.appendChild(opt);
-            });
-            schoolSelect.value = state.school; // 초기 선택값 "마산중앙초등학교"로 유지
+            // 지역 및 학교 셀렉트 박스 초기화
+            document.getElementById("regionSelect").value = state.region;
+            populateSchoolSelect(state.region);
+            document.getElementById("schoolSelect").value = state.school; // 초기 선택값 유지
 
             const storedNeis = localStorage.getItem("neis_timetable_apikey");
             if (storedNeis !== null && storedNeis !== "") state.apiKey = storedNeis;
@@ -861,7 +914,7 @@
             document.getElementById("semesterSelect").value = autoInfo.semester;
 
             await checkApiConnection(); 
-            await ensureSchoolCode(state.school);
+            await ensureSchoolCode(state.region, state.school);
             await updateClassDropdownUI(); 
             await renderTimetable();
         };
