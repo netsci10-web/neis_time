@@ -172,9 +172,11 @@
                     <label class="text-xs font-semibold text-slate-500 whitespace-nowrap">기준 날짜 선택:</label>
                     <div class="flex items-center gap-2">
                         <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
-                            <button onclick="changeWeek(-1)" class="p-1.5 hover:bg-white rounded-lg transition text-slate-600 hover:text-slate-900 shadow-sm"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                            <button onclick="changeDate(-7)" class="p-1.5 hover:bg-white rounded-lg transition text-slate-600 hover:text-slate-900 shadow-sm" title="1주일 이전"><i class="fa-solid fa-angles-left text-xs"></i></button>
+                            <button onclick="changeDate(-1)" class="p-1.5 hover:bg-white rounded-lg transition text-slate-600 hover:text-slate-900 shadow-sm" title="하루 이전"><i class="fa-solid fa-chevron-left text-xs"></i></button>
                             <input type="date" id="datePicker" onchange="handleDateChange()" class="bg-transparent border-none text-sm font-semibold focus:outline-none px-1 text-slate-700">
-                            <button onclick="changeWeek(1)" class="p-1.5 hover:bg-white rounded-lg transition text-slate-600 hover:text-slate-900 shadow-sm"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                            <button onclick="changeDate(1)" class="p-1.5 hover:bg-white rounded-lg transition text-slate-600 hover:text-slate-900 shadow-sm" title="하루 다음"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                            <button onclick="changeDate(7)" class="p-1.5 hover:bg-white rounded-lg transition text-slate-600 hover:text-slate-900 shadow-sm" title="1주일 다음"><i class="fa-solid fa-angles-right text-xs"></i></button>
                         </div>
                         <button onclick="goToToday()" class="bg-white hover:bg-indigo-50 text-indigo-600 text-sm font-extrabold py-2 px-4 border border-indigo-200 rounded-xl transition shadow-sm whitespace-nowrap">오늘</button>
                     </div>
@@ -278,6 +280,33 @@
         </div>
     </footer>
 
+    <!-- 모달: 수업 상세 정보 -->
+    <div id="lessonModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-opacity opacity-0 no-print">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden transform scale-95 transition-transform duration-200" id="lessonModalContent">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 opacity-10"></div>
+                <h3 id="modalSubject" class="font-extrabold text-xl text-slate-800 relative z-10">과목</h3>
+                <button onclick="closeLessonModal()" class="text-slate-400 hover:text-slate-600 transition relative z-10 bg-white/50 rounded-full w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 space-y-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                        <i class="fa-regular fa-clock"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">교시</p>
+                        <p id="modalPeriod" class="text-sm font-semibold text-slate-800">-</p>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                    <p class="text-xs font-bold text-indigo-500 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-book-open"></i> 수업 내용</p>
+                    <p id="modalContent" class="text-sm text-slate-700 leading-relaxed font-medium">-</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 모달: 급식 정보 명세 (새로 추가됨) -->
     <div id="mealInfoModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-opacity opacity-0 no-print">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform scale-95 transition-transform duration-200 flex flex-col max-h-[80vh]" id="mealInfoModalContent">
@@ -317,7 +346,7 @@
     <div id="schoolInfoModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-opacity opacity-0 no-print">
         <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden transform scale-95 transition-transform duration-200 flex flex-col max-h-[85vh]" id="schoolInfoModalContent">
             <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-indigo-600 text-white">
-                <h3 class="font-bold text-lg flex items-center gap-2">
+                <h3 class="font-bold text-xl flex items-center gap-2">
                     <i class="fa-solid fa-building-columns"></i> NEIS 학교 기본정보 명세
                 </h3>
                 <button onclick="closeSchoolInfoModal()" class="text-indigo-200 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -607,6 +636,34 @@
             }
         }
 
+        // NEIS 3: 학사일정
+        async function fetchNeisSchedule(schoolInfo, fromDate, toDate) {
+            if (!state.apiKey || !schoolInfo) return {};
+            const fromYmd = fromDate.replace(/-/g, "");
+            const toYmd = toDate.replace(/-/g, "");
+            const requestUrl = `https://open.neis.go.kr/hub/SchoolSchedule?KEY=${state.apiKey}&Type=json&pIndex=1&pSize=100&ATPT_OFCDC_SC_CODE=${schoolInfo.officeCode}&SD_SCHUL_CODE=${schoolInfo.schoolCode}&AA_FROM_YMD=${fromYmd}&AA_TO_YMD=${toYmd}`;
+            
+            try {
+                const response = await fetch(requestUrl);
+                const data = await response.json();
+                let scheduleMap = {};
+                if (data.SchoolSchedule && data.SchoolSchedule[1]) {
+                    data.SchoolSchedule[1].row.forEach(r => {
+                        const dateStr = `${r.AA_YMD.substring(0,4)}-${r.AA_YMD.substring(4,6)}-${r.AA_YMD.substring(6,8)}`;
+                        if (!scheduleMap[dateStr]) scheduleMap[dateStr] = [];
+                        if (r.EVENT_NM) {
+                            if (!scheduleMap[dateStr].includes(r.EVENT_NM)) {
+                                scheduleMap[dateStr].push(r.EVENT_NM);
+                            }
+                        }
+                    });
+                }
+                return scheduleMap;
+            } catch (e) {
+                return {};
+            }
+        }
+
         /* ==============================================
          * 5. UI 렌더링 로직 (학년/반 동적 생성 포함)
          * ============================================== */
@@ -616,7 +673,7 @@
             const schoolCodeInfo = SCHOOLS_DB[`${state.region}_${state.school}`];
             if(!schoolCodeInfo) return;
 
-            const year = state.year; // DOM 대신 상태 변수 우선 사용
+            const year = state.year; 
             const gradeSelect = document.getElementById("gradeSelect");
             const classSelect = document.getElementById("classSelect");
             
@@ -753,6 +810,9 @@
             grid.innerHTML = '';
             document.getElementById("loadingIndicator").classList.remove("hidden");
 
+            const scheduleMap = await fetchNeisSchedule(schoolInfo, weekDays[0].dateStr, weekDays[4].dateStr);
+            if (currentRenderId !== renderId) return;
+
             for (const dayInfo of weekDays) {
                 if (currentRenderId !== renderId) return;
 
@@ -760,7 +820,6 @@
                 col.className = "flex flex-col gap-2 min-w-[110px]";
                 
                 const isSelectedDate = dayInfo.dateStr === state.date;
-                // 선택된 날짜와 기본 날짜의 색상 처리 (기본 요일 배경: 짙은 회색)
                 const headerBg = isSelectedDate ? "bg-indigo-600 text-white shadow-md ring-2 ring-indigo-300 ring-offset-1 border-indigo-600" : "bg-slate-700 text-white border-slate-700";
                 
                 const headerDiv = document.createElement("div");
@@ -770,10 +829,16 @@
                     <p class="text-[10px] sm:text-xs font-medium opacity-80 mt-0.5">${dayInfo.dateStr.substring(5).replace('-','.')}</p>
                 `;
 
+                const eventName = scheduleMap[dayInfo.dateStr] ? scheduleMap[dayInfo.dateStr].join(', ') : '';
+                const scheduleDiv = document.createElement("div");
+                scheduleDiv.className = "bg-emerald-50 text-emerald-700 text-[10px] sm:text-xs font-bold p-1.5 sm:p-2 rounded-xl text-center border border-emerald-200 min-h-[36px] flex items-center justify-center break-keep leading-tight shadow-sm";
+                scheduleDiv.innerHTML = eventName ? `<i class="fa-solid fa-flag text-emerald-500 mr-1"></i> ${eventName}` : `<span class="text-transparent">-</span>`;
+
                 const colContainer = document.createElement("div");
                 colContainer.className = "flex flex-col gap-2 flex-grow";
                 
                 col.appendChild(headerDiv);
+                col.appendChild(scheduleDiv);
                 col.appendChild(colContainer);
                 grid.appendChild(col);
 
@@ -786,7 +851,7 @@
                     const rows = apiResult.elsTimetable[1].row;
                     lessons = rows.map(r => ({
                         period: parseInt(r.PERIO),
-                        subject: r.ITRT_CNTNT.replace(/\*/g, '').trim(),
+                        subject: (r.ITRT_CNTNT || "").replace(/\*/g, '').trim(),
                         content: "-",
                         supplies: "-",
                         type: "API연동"
@@ -879,17 +944,32 @@
             await renderTimetable();
         }
 
-        async function changeWeek(direction) {
+        async function changeDate(days) {
             const [y, m, d] = state.date.split('-');
             const current = new Date(y, m - 1, d);
-            current.setDate(current.getDate() + (direction * 7));
+            
+            // 주말 건너뛰기 로직 (하루 단위 이동일 때만 적용)
+            if (days === 1) {
+                if (current.getDay() === 5) { // 금요일에서 다음으로 이동 시
+                    days = 3; // 토, 일 건너뛰고 월요일(+3일)
+                } else if (current.getDay() === 6) { // 토요일인 경우
+                    days = 2; // 일 건너뛰고 월요일(+2일)
+                }
+            } else if (days === -1) {
+                if (current.getDay() === 1) { // 월요일에서 이전으로 이동 시
+                    days = -3; // 일, 토 건너뛰고 금요일(-3일)
+                } else if (current.getDay() === 0) { // 일요일인 경우
+                    days = -2; // 토 건너뛰고 금요일(-2일)
+                }
+            }
+
+            current.setDate(current.getDate() + days);
             state.date = getFormattedDate(current);
             document.getElementById("datePicker").value = state.date;
             
             const autoInfo = autoDetermineYearSemester(state.date);
             const prevYear = state.year;
             
-            // 변경된 연도와 학기를 내부 상태(state)에 정확히 동기화
             state.year = autoInfo.academicYear;
             state.semester = autoInfo.semester;
             document.getElementById("yearSelect").value = state.year;
@@ -906,7 +986,6 @@
             const autoInfo = autoDetermineYearSemester(state.date);
             const prevYear = state.year;
             
-            // 변경된 연도와 학기를 내부 상태(state)에 정확히 동기화
             state.year = autoInfo.academicYear;
             state.semester = autoInfo.semester;
             document.getElementById("yearSelect").value = state.year;
@@ -925,7 +1004,6 @@
             const autoInfo = autoDetermineYearSemester(state.date);
             const prevYear = state.year;
             
-            // 변경된 연도와 학기를 내부 상태(state)에 정확히 동기화
             state.year = autoInfo.academicYear;
             state.semester = autoInfo.semester;
             document.getElementById("yearSelect").value = state.year;
@@ -951,7 +1029,16 @@
         }
 
         function printTimetable() {
-            window.print();
+            // iframe 환경 지원 및 브라우저 렌더링 지연시간 고려
+            window.focus();
+            setTimeout(() => {
+                try {
+                    window.print();
+                } catch(e) {
+                    console.error("인쇄 실행 오류:", e);
+                    showToast("현재 환경에서는 인쇄를 지원하지 않습니다.", "error");
+                }
+            }, 300);
         }
 
         /* ==============================================
@@ -992,7 +1079,6 @@
                 if (data.mealServiceDietInfo && data.mealServiceDietInfo[1] && data.mealServiceDietInfo[1].row) {
                     const rows = data.mealServiceDietInfo[1].row;
                     rows.forEach(row => {
-                        // 급식 문자열 포맷팅 및 알레르기 툴팁 처리
                         let dietHtml = row.DDISH_NM.replace(/<br\/>/g, "<br>");
                         dietHtml = dietHtml.replace(/\b(1[0-9]|[1-9])\b/g, (match) => {
                             if (ALLERGY_MAP[match]) {
@@ -1004,7 +1090,6 @@
                         const calorie = row.CAL_INFO || "정보 없음";
                         const mealType = row.MMEAL_SC_NM || "급식";
                         
-                        // 원산지 정보 파싱 및 포맷팅 (줄바꿈을 쉼표로 변경하여 가독성 향상)
                         let originInfo = row.ORPLC_INFO || "원산지 정보 없음";
                         originInfo = originInfo.replace(/<br\s*\/?>/gi, ", ");
 
@@ -1102,10 +1187,10 @@
 
             fields.forEach(f => {
                 const item = document.createElement("div");
-                item.className = "bg-white p-3 rounded-xl border border-slate-200 shadow-sm";
+                item.className = "bg-white p-4 rounded-xl border border-slate-200 shadow-sm";
                 item.innerHTML = `
-                    <p class="text-[10px] font-bold text-slate-400 mb-1">${f.label}</p>
-                    <p class="text-sm font-semibold text-slate-800 break-all">${f.value || "-"}</p>
+                    <p class="text-xs font-bold text-slate-400 mb-1.5">${f.label}</p>
+                    <p class="text-base font-semibold text-slate-800 break-all">${f.value || "-"}</p>
                 `;
                 grid.appendChild(item);
             });
