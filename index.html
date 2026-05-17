@@ -47,13 +47,10 @@
                             <i class="fa-solid fa-spinner fa-spin"></i> 확인중...
                         </button>
                     </div>
-                    <p class="text-[10px] text-slate-500 font-medium mt-0.5">나이스(NEIS) & 학교알리미 API</p>
+                    <p class="text-[10px] text-slate-500 font-medium mt-0.5">나이스(NEIS) API</p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="toggleApiKeyModal()" class="text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 px-3 rounded-lg transition border border-slate-200 flex items-center gap-1.5">
-                    <i class="fa-solid fa-key text-slate-500"></i> API 키 설정
-                </button>
             </div>
         </div>
     </header>
@@ -74,11 +71,7 @@
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                         <select id="schoolSelect" onchange="handleSchoolChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 transition appearance-none">
-                            <option value="마산중앙초등학교">마산중앙초등학교 (경남)</option>
-                            <option value="마산신월초등학교">마산신월초등학교 (경남)</option>
-                            <option value="마산완월초등학교">마산완월초등학교 (경남)</option>
-                            <option value="마산월영초등학교">마산월영초등학교 (경남)</option>
-                            <option value="마산합포초등학교">마산합포초등학교 (경남)</option>
+                            <!-- JS에서 마산 전체 초등학교 목록 자동 렌더링 -->
                         </select>
                         <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
                     </div>
@@ -190,11 +183,6 @@
                         <button onclick="fetchAndShowSchoolInfo()" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold py-2.5 px-4 rounded-xl transition duration-150 flex items-center justify-center gap-1.5 border border-indigo-200 border-dashed">
                             <i class="fa-solid fa-building-columns"></i> NEIS 학교 기본정보
                         </button>
-                        
-                        <!-- 신규: 학교알리미 공시정보 조회 버튼 -->
-                        <button onclick="fetchAndShowAlimiInfo()" class="w-full bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs font-bold py-2.5 px-4 rounded-xl transition duration-150 flex items-center justify-center gap-1.5 border border-teal-200 border-dashed">
-                            <i class="fa-solid fa-chart-pie"></i> 학교알리미 주요공시지표
-                        </button>
                     </div>
                 </div>
             </div>
@@ -227,41 +215,10 @@
     <!-- 푸터 -->
     <footer class="bg-slate-900 text-slate-400 text-xs py-8 mt-12 border-t border-slate-800 no-print">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center text-center gap-2">
-            <span class="text-slate-500">본 서비스는 나이스 교육정보 및 학교알리미 개방포털 공공데이터(OpenAPI)를 활용합니다.</span>
+            <span class="text-slate-500">본 서비스는 나이스 교육정보 개방포털 공공데이터(OpenAPI)를 활용합니다.</span>
             <span class="text-slate-600">※ 가상(모의) 데이터는 엄격히 배제되며 실제 연동 결과만 제공됩니다.</span>
         </div>
     </footer>
-
-    <!-- 모달: API KEY 설정 (2개 키 지원 확장) -->
-    <div id="apiKeyModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-opacity opacity-0">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform scale-95 transition-transform duration-200" id="apiKeyModalContent">
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-key text-indigo-500"></i> OpenAPI 인증키 통합 관리
-                </h3>
-                <button onclick="toggleApiKeyModal()" class="text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div class="p-6 space-y-4">
-                <p class="text-xs text-slate-500 leading-relaxed bg-red-50 p-3 rounded-lg border border-red-100 text-red-600 font-medium">
-                    ※ 100% 실시간 데이터만 표출합니다. 인증키가 없거나 통신이 실패하면 데이터 조회가 불가능합니다. (가상데이터 미제공 원칙)
-                </p>
-                
-                <div class="flex flex-col gap-1.5">
-                    <label class="text-xs font-bold text-indigo-600 flex items-center gap-1.5"><i class="fa-solid fa-server"></i> NEIS OpenAPI 키 (시간표/기본정보)</label>
-                    <input type="text" id="apiKeyInput" placeholder="NEIS 인증키를 입력하세요" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition font-mono">
-                </div>
-                
-                <div class="flex flex-col gap-1.5">
-                    <label class="text-xs font-bold text-teal-600 flex items-center gap-1.5"><i class="fa-solid fa-server"></i> 학교알리미 OpenAPI 키 (공시지표)</label>
-                    <input type="text" id="alimiKeyInput" placeholder="학교알리미 인증키를 입력하세요" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition font-mono">
-                </div>
-            </div>
-            <div class="p-5 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
-                <button onclick="toggleApiKeyModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-200 transition">취소</button>
-                <button onclick="saveApiKey()" class="px-5 py-2 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition shadow-sm">저장 및 적용</button>
-            </div>
-        </div>
-    </div>
 
     <!-- 모달: 수업 상세 정보 -->
     <div id="lessonModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-opacity opacity-0">
@@ -312,28 +269,6 @@
         </div>
     </div>
 
-    <!-- 모달: 신규 학교알리미 공시정보 결과 -->
-    <div id="alimiInfoModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-opacity opacity-0">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden transform scale-95 transition-transform duration-200 flex flex-col max-h-[85vh]" id="alimiInfoModalContent">
-            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-teal-600 text-white">
-                <h3 class="font-bold text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-chart-pie"></i> 학교알리미 주요 공시지표 현황
-                </h3>
-                <button onclick="closeAlimiInfoModal()" class="text-teal-200 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div id="alimiInfoContent" class="p-6 overflow-y-auto hide-scrollbar bg-slate-50 flex-1 relative">
-                <div id="alimiInfoLoading" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/80 backdrop-blur-sm z-10">
-                    <i class="fa-solid fa-circle-notch fa-spin text-3xl text-teal-500 mb-2"></i>
-                    <p class="text-sm font-medium text-slate-600">학교알리미 서버와 통신 중입니다...</p>
-                </div>
-                <div id="alimiInfoContainer" class="flex flex-col gap-4"></div>
-            </div>
-            <div class="p-4 border-t border-slate-100 bg-white flex justify-end">
-                <button onclick="closeAlimiInfoModal()" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">닫기</button>
-            </div>
-        </div>
-    </div>
-
     <!-- 토스트 알림 컨테이너 -->
     <div id="toastContainer" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 flex flex-col gap-2 z-50 pointer-events-none w-full max-w-sm px-4"></div>
 
@@ -341,13 +276,30 @@
         /* ==============================================
          * 1. 상태 및 상수 데이터 관리
          * ============================================== */
-        const SCHOOLS_DB = {
-            "마산중앙초등학교": { officeCode: "S10", schoolCode: "9010078", name: "마산중앙초등학교", region: "경남" },
-            "마산신월초등학교": { officeCode: "S10", schoolCode: "9010153", name: "마산신월초등학교", region: "경남" },
-            "마산완월초등학교": { officeCode: "S10", schoolCode: "9010156", name: "마산완월초등학교", region: "경남" },
-            "마산월영초등학교": { officeCode: "S10", schoolCode: "9010162", name: "마산월영초등학교", region: "경남" },
-            "마산합포초등학교": { officeCode: "S10", schoolCode: "9010173", name: "마산합포초등학교", region: "경남" }
-        };
+        // 마산 지역(합포구, 회원구) 초등학교 전체 목록 (가나다 순 정렬)
+        const MASAN_SCHOOL_NAMES = [
+            "가고파초등학교", "가포초등학교", "감천초등학교", "광려초등학교", "교동초등학교",
+            "교방초등학교", "구산초등학교", "구산초등학교구서분교장", "구암초등학교", "내서초등학교",
+            "마산고운초등학교", "마산신월초등학교", "마산중앙초등학교", "무학초등학교", "반동초등학교", 
+            "봉덕초등학교", "북성초등학교", "산호초등학교", "삼계초등학교", "상남초등학교", 
+            "상일초등학교", "석전초등학교", "성호초등학교", "안계초등학교", "양덕초등학교", 
+            "완월초등학교", "용마초등학교", "우산초등학교", "월성초등학교", "월영초등학교", 
+            "월포초등학교", "전안초등학교", "중리초등학교", "진동초등학교", "진전초등학교", 
+            "팔룡초등학교", "하북초등학교", "합성초등학교", "합포초등학교", "해운초등학교",
+            "현동초등학교", "호계초등학교", "회원초등학교"
+        ].sort();
+
+        // 이름을 기반으로 SCHOOLS_DB 자동 생성 (학교 코드는 API로 자동 탐색됨)
+        const SCHOOLS_DB = {};
+        MASAN_SCHOOL_NAMES.forEach(name => {
+            SCHOOLS_DB[name] = { 
+                officeCode: "S10", // 경상남도 교육청
+                schoolCode: "",    // ensureSchoolCode 함수를 통해 자동 보정됨
+                name: name, 
+                region: "경남", 
+                resolved: false 
+            };
+        });
 
         const state = {
             school: "마산중앙초등학교",
@@ -356,8 +308,7 @@
             grade: "4",
             class: "",
             date: "", // YYYY-MM-DD
-            apiKey: "89f71f30a00545d2b8fc928abf0fcaee", // 기존 NEIS API 키
-            alimiApiKey: "d711ac8ef661471b854080ef08feed44" // 신규 추가된 학교알리미 API 키
+            apiKey: "89f71f30a00545d2b8fc928abf0fcaee"
         };
 
         const subjectColors = {
@@ -372,7 +323,7 @@
             "도덕": "bg-purple-50 text-purple-600 border-purple-100",
             "실과": "bg-rose-50 text-rose-600 border-rose-100",
             "창체": "bg-slate-50 text-slate-600 border-slate-200",
-            "없음": "bg-gray-50 text-gray-400 border-gray-100 border-dashed" // 데이터 없음
+            "없음": "bg-gray-50 text-gray-400 border-gray-100 border-dashed"
         };
 
         /* ==============================================
@@ -386,18 +337,21 @@
         }
 
         function getWeekRange(dateStr) {
-            const date = new Date(dateStr);
+            const [y, m, d] = dateStr.split('-');
+            const date = new Date(y, m - 1, d);
             const day = date.getDay();
-            const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            const diffToMonday = day === 0 ? -6 : 1 - day;
             
-            const monday = new Date(date.setDate(diff));
+            const monday = new Date(date);
+            monday.setDate(date.getDate() + diffToMonday);
+            
             const days = [];
             for (let i = 0; i < 5; i++) { 
-                const d = new Date(monday);
-                d.setDate(monday.getDate() + i);
+                const currentD = new Date(monday);
+                currentD.setDate(monday.getDate() + i);
                 days.push({
-                    date: d,
-                    dateStr: getFormattedDate(d),
+                    date: currentD,
+                    dateStr: getFormattedDate(currentD),
                     dayName: ['월', '화', '수', '목', '금'][i]
                 });
             }
@@ -405,7 +359,8 @@
         }
 
         function autoDetermineYearSemester(dateStr) {
-            const d = new Date(dateStr);
+            const [yStr, mStr, dStr] = dateStr.split('-');
+            const d = new Date(yStr, mStr - 1, dStr);
             let year = d.getFullYear();
             const month = d.getMonth() + 1;
             let sem = "1";
@@ -473,12 +428,12 @@
             }
             try {
                 const s = SCHOOLS_DB["마산중앙초등학교"];
-                const url = `https://open.neis.go.kr/hub/schoolInfo?KEY=${state.apiKey}&Type=json&pIndex=1&pSize=1&ATPT_OFCDC_SC_CODE=${s.officeCode}&SD_SCHUL_CODE=${s.schoolCode}`;
+                // 검색 명칭(SCHUL_NM)으로 연동 테스트를 진행하여 하드코딩 코드 불일치 오류 우회
+                const url = `https://open.neis.go.kr/hub/schoolInfo?KEY=${state.apiKey}&Type=json&pIndex=1&pSize=1&ATPT_OFCDC_SC_CODE=${s.officeCode}&SCHUL_NM=${encodeURIComponent(s.name)}`;
                 
                 const response = await fetch(url);
                 const data = await response.json();
                 
-                // 버그 수정: INFO-200(해당 데이터 없음)은 정상 통신으로 간주합니다.
                 if (data.RESULT) {
                     if (data.RESULT.CODE !== "INFO-000" && data.RESULT.CODE !== "INFO-200") {
                         throw new Error(data.RESULT.MESSAGE);
@@ -489,6 +444,7 @@
                     setApiStatus(true);
                     if (forceRefresh) {
                         showToast("API 서버와 정상적으로 연동되었습니다.", "success");
+                        await ensureSchoolCode(state.school);
                         await updateClassDropdownUI();
                         renderTimetable();
                     }
@@ -505,6 +461,25 @@
          * 4. API 통신 로직 (NEIS 및 학교알리미)
          * ============================================== */
          
+        // 학교 표준코드 동적 보정 (API 조회 실패 방지용)
+        async function ensureSchoolCode(schoolName) {
+            if (!state.apiKey) return;
+            const school = SCHOOLS_DB[schoolName];
+            if (!school || school.resolved) return;
+
+            const url = `https://open.neis.go.kr/hub/schoolInfo?KEY=${state.apiKey}&Type=json&pIndex=1&pSize=1&ATPT_OFCDC_SC_CODE=${school.officeCode}&SCHUL_NM=${encodeURIComponent(school.name)}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.schoolInfo && data.schoolInfo[1] && data.schoolInfo[1].row) {
+                    school.schoolCode = data.schoolInfo[1].row[0].SD_SCHUL_CODE;
+                    school.resolved = true;
+                }
+            } catch (e) {
+                console.warn("School code resolution failed:", e);
+            }
+        }
+
         // NEIS 1: 시간표
         async function fetchNeisTimetable(year, sem, dateStr, grade, classNm) {
             if (!state.apiKey || !classNm) return null;
@@ -536,7 +511,6 @@
                 const response = await fetch(requestUrl);
                 const data = await response.json();
                 
-                // 버그 수정: INFO-200 에러 처리 완화
                 if (data.RESULT) {
                     if (data.RESULT.CODE === "INFO-200") return null;
                     if (data.RESULT.CODE !== "INFO-000") throw new Error();
@@ -561,11 +535,10 @@
                 const response = await fetch(requestUrl);
                 const data = await response.json();
                 
-                // 버그 수정: INFO-200 에러 처리 완화
                 if (data.RESULT) {
                     if (data.RESULT.CODE === "INFO-200") {
                         setApiStatus(true);
-                        return null; // 통신은 성공했으나 데이터만 없는 상태
+                        return null; 
                     }
                     if (data.RESULT.CODE !== "INFO-000") throw new Error();
                 }
@@ -581,42 +554,6 @@
             } catch (e) {
                 setApiStatus(false);
                 return null;
-            }
-        }
-
-        // 학교알리미 (공시정보 XML 통신)
-        async function fetchAlimiAPI(apiType) {
-            if (!state.alimiApiKey) return null;
-            const s = SCHOOLS_DB[state.school] || SCHOOLS_DB["마산중앙초등학교"];
-            
-            // 공시정보는 전년도 확정 데이터가 안정적이므로 2023년 기준 설정
-            const pbanYr = "2023"; 
-            const targetUrl = `https://www.schoolinfo.go.kr/openApi.do?apiKey=${state.alimiApiKey}&apiType=${apiType}&pbanYr=${pbanYr}&schulCds=${s.schoolCode}`;
-            
-            // 브라우저 CORS 차단 에러를 우회하기 위한 공용 프록시 URL 적용
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-            
-            try {
-                // 프록시 서버를 통해 데이터 요청
-                const response = await fetch(proxyUrl);
-                if (!response.ok) return null;
-                
-                const xmlText = await response.text();
-                const parser = new DOMParser();
-                const xml = parser.parseFromString(xmlText, "application/xml");
-                
-                const list = xml.querySelectorAll("list");
-                if (list.length > 0) {
-                    const result = {};
-                    for (let child of list[0].children) {
-                        result[child.tagName] = child.textContent;
-                    }
-                    return result;
-                }
-                return null;
-            } catch (e) {
-                console.warn("School Alimi API Fetch Error (CORS or Network):", e);
-                return null; // 절대 가상 데이터 생성 안함
             }
         }
 
@@ -653,7 +590,6 @@
                     classSelect.value = classList[0];
                 }
             } else {
-                // 데이터 부재 시 예외 가상 생성(1~5반) 방지
                 const opt = document.createElement("option");
                 opt.value = "";
                 opt.innerText = "반 정보 없음";
@@ -713,7 +649,6 @@
                     let lessonData = matched;
 
                     if (!lessonData) {
-                        // 완전히 없음 처리 (가상데이터 방어)
                         lessonData = { period: p, subject: "없음", content: "일정 없음", supplies: "-", type: "데이터 부재", isEmpty: true };
                     }
 
@@ -760,6 +695,7 @@
 
         async function handleSchoolChange() {
             state.school = document.getElementById("schoolSelect").value;
+            await ensureSchoolCode(state.school);
             await updateClassDropdownUI(); 
             showToast(`[${state.school}] 학교로 변경되었습니다.`, "info");
             await renderTimetable();
@@ -772,7 +708,8 @@
         }
 
         async function changeWeek(direction) {
-            const current = new Date(state.date);
+            const [y, m, d] = state.date.split('-');
+            const current = new Date(y, m - 1, d);
             current.setDate(current.getDate() + (direction * 7));
             state.date = getFormattedDate(current);
             document.getElementById("datePicker").value = state.date;
@@ -807,6 +744,7 @@
             state.semester = document.getElementById("semesterSelect").value;
             state.grade = document.getElementById("gradeSelect").value;
             
+            await ensureSchoolCode(state.school);
             await updateClassDropdownUI(); 
             state.class = document.getElementById("classSelect").value;
 
@@ -821,43 +759,6 @@
         /* ==============================================
          * 7. 모달(UI) 및 공시정보 시각화 컨트롤
          * ============================================== */
-        function toggleApiKeyModal() {
-            const modal = document.getElementById("apiKeyModal");
-            const content = document.getElementById("apiKeyModalContent");
-            if (modal.classList.contains("hidden")) {
-                document.getElementById("apiKeyInput").value = state.apiKey; 
-                document.getElementById("alimiKeyInput").value = state.alimiApiKey; 
-                modal.classList.remove("hidden");
-                modal.classList.add("flex");
-                setTimeout(() => {
-                    modal.classList.remove("opacity-0");
-                    content.classList.remove("scale-95");
-                }, 10);
-            } else {
-                modal.classList.add("opacity-0");
-                content.classList.add("scale-95");
-                setTimeout(() => {
-                    modal.classList.add("hidden");
-                    modal.classList.remove("flex");
-                }, 200);
-            }
-        }
-
-        function saveApiKey() {
-            const neisVal = document.getElementById("apiKeyInput").value.trim();
-            const alimiVal = document.getElementById("alimiKeyInput").value.trim();
-            
-            state.apiKey = neisVal;
-            state.alimiApiKey = alimiVal;
-            
-            localStorage.setItem("neis_timetable_apikey", neisVal);
-            localStorage.setItem("alimi_apikey", alimiVal);
-            
-            toggleApiKeyModal();
-            // 메시지가 중복 표시되지 않도록 직접 연결
-            checkApiConnection(true);
-        }
-
         function openLessonModal(data) {
             if (data.isEmpty) return;
             document.getElementById("modalSubject").innerText = data.subject;
@@ -885,7 +786,7 @@
             }, 200);
         }
 
-        // [기존] 학교 기본정보 (NEIS)
+        // 학교 기본정보 (NEIS)
         async function fetchAndShowSchoolInfo() {
             const modal = document.getElementById("schoolInfoModal");
             const content = document.getElementById("schoolInfoModalContent");
@@ -936,95 +837,21 @@
             setTimeout(() => { modal.classList.add("hidden"); modal.classList.remove("flex"); }, 200);
         }
 
-        // [신규] 학교알리미 공시지표 시각화
-        async function fetchAndShowAlimiInfo() {
-            const modal = document.getElementById("alimiInfoModal");
-            const content = document.getElementById("alimiInfoModalContent");
-            const container = document.getElementById("alimiInfoContainer");
-            const loading = document.getElementById("alimiInfoLoading");
-            
-            container.innerHTML = '';
-            loading.classList.remove("hidden");
-            modal.classList.remove("hidden");
-            modal.classList.add("flex");
-            setTimeout(() => { modal.classList.remove("opacity-0"); content.classList.remove("scale-95"); }, 10);
-
-            // API 병렬 다중 호출 (급식: 34, 도서관: 58, 장애인편의: 21)
-            const [mealsData, libraryData, safetyData] = await Promise.all([
-                fetchAlimiAPI(34),
-                fetchAlimiAPI(58),
-                fetchAlimiAPI(21)
-            ]);
-
-            loading.classList.add("hidden");
-
-            const createCard = (title, icon, data, fields) => {
-                const card = document.createElement("div");
-                card.className = "bg-white p-4 rounded-xl border border-slate-200 shadow-sm";
-                
-                let html = `<h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2"><i class="fa-solid ${icon} text-teal-500"></i> ${title}</h4>`;
-                
-                // 가상 데이터 미사용 원칙: 데이터가 없을 땐 엄격히 없음을 알림 (CORS 등 통신 오류 포함)
-                if (!data) {
-                    html += `<p class="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border border-dashed border-slate-200 font-medium">
-                        데이터 없음 (또는 브라우저 CORS 보안 정책으로 인해 API 호출이 거부되었습니다.)
-                    </p>`;
-                } else {
-                    html += `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">`;
-                    fields.forEach(f => {
-                        const val = data[f.key] || "정보 미제공";
-                        html += `
-                            <div class="bg-slate-50 p-2.5 rounded-lg">
-                                <p class="text-[10px] font-bold text-slate-400 mb-0.5">${f.label}</p>
-                                <p class="text-sm font-semibold text-slate-700">${val}</p>
-                            </div>
-                        `;
-                    });
-                    html += `</div>`;
-                }
-                card.innerHTML = html;
-                return card;
-            };
-
-            // 규격화된 항목에 맞추어 카드 섹션 부착
-            container.appendChild(createCard("급식 실시 현황 (항목코드 34)", "fa-utensils", mealsData, [
-                { label: "운영방식 (급식종류)", key: "OPER_MET_CODE" },
-                { label: "전체 학생 수", key: "HAKSAENGSU_TOT" },
-                { label: "급식 이용 학생 수", key: "MLSV_STDNT_FGR" }
-            ]));
-
-            container.appendChild(createCard("학교 도서관 현황 (항목코드 58)", "fa-book-open-reader", libraryData, [
-                { label: "일반 도서 자료 수", key: "GNRL_BOKS_FGR" },
-                { label: "비도서 자료 수", key: "NN_BOS_DTA_FGR" },
-                { label: "1인당 장서 수", key: "STDN_1_PER_BOKS_FGR" },
-                { label: "자료보유 총합계", key: "SUMCNT" }
-            ]));
-            
-            container.appendChild(createCard("장애인 편의시설 현황 (항목코드 21)", "fa-wheelchair", safetyData, [
-                { label: "주 출입구 접근로 유무", key: "COL_1" },
-                { label: "장애인 전용 주차구역", key: "COL_2" },
-                { label: "계단/승강기/휠체어리프트", key: "COL_6" }
-            ]));
-        }
-
-        function closeAlimiInfoModal() {
-            const modal = document.getElementById("alimiInfoModal");
-            const content = document.getElementById("alimiInfoModalContent");
-            modal.classList.add("opacity-0");
-            content.classList.add("scale-95");
-            setTimeout(() => { modal.classList.add("hidden"); modal.classList.remove("flex"); }, 200);
-        }
-
         // 초기화
         window.onload = async function() {
-            const storedNeis = localStorage.getItem("neis_timetable_apikey");
-            if (storedNeis) state.apiKey = storedNeis;
+            // 셀렉트 박스에 마산 전체 초등학교 43개 목록 동적 주입
+            const schoolSelect = document.getElementById("schoolSelect");
+            schoolSelect.innerHTML = "";
+            MASAN_SCHOOL_NAMES.forEach(name => {
+                const opt = document.createElement("option");
+                opt.value = name;
+                opt.innerText = `${name} (마산)`;
+                schoolSelect.appendChild(opt);
+            });
+            schoolSelect.value = state.school; // 초기 선택값 "마산중앙초등학교"로 유지
 
-            const storedAlimi = localStorage.getItem("alimi_apikey");
-            if (storedAlimi) state.alimiApiKey = storedAlimi;
-            
-            document.getElementById("apiKeyInput").value = state.apiKey; 
-            document.getElementById("alimiKeyInput").value = state.alimiApiKey;
+            const storedNeis = localStorage.getItem("neis_timetable_apikey");
+            if (storedNeis !== null && storedNeis !== "") state.apiKey = storedNeis;
             
             state.date = getFormattedDate(new Date());
             document.getElementById("datePicker").value = state.date;
@@ -1034,6 +861,7 @@
             document.getElementById("semesterSelect").value = autoInfo.semester;
 
             await checkApiConnection(); 
+            await ensureSchoolCode(state.school);
             await updateClassDropdownUI(); 
             await renderTimetable();
         };
