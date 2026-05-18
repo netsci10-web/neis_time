@@ -14,16 +14,18 @@
         
         /* 인쇄 최적화 CSS */
         @media print {
-            @page { size: A4 landscape; margin: 15mm; }
+            @page { size: A4 landscape; margin: 10mm; }
             .no-print { display: none !important; }
-            body { background-color: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            body { background-color: white; }
             
             /* 불필요한 패널 숨기기 및 여백 제거 */
             .print-hide { display: none !important; }
-            .print-full { grid-column: 1 / -1 !important; width: 100% !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
+            .print-full { grid-column: 1 / -1 !important; width: 100% !important; border: none !important; box-shadow: none !important; padding: 0 !important; overflow: visible !important; }
             
             /* 시간표 그리드가 화면을 꽉 채우도록 설정 */
-            .print-grid { display: flex !important; width: 100% !important; gap: 8px !important; }
+            .overflow-x-auto, .overflow-hidden { overflow: visible !important; }
+            .print-grid { display: flex !important; width: 100% !important; gap: 8px !important; min-width: auto !important; }
             .print-grid > div { flex: 1; min-width: 0 !important; }
             .print-show { display: block !important; }
         }
@@ -46,7 +48,7 @@
     <div id="initialLoader" class="fixed inset-0 bg-slate-50 z-[100] flex flex-col items-center justify-center transition-opacity duration-500">
         <i class="fa-solid fa-school-flag text-6xl text-indigo-500 mb-6 animate-bounce"></i>
         <h2 class="text-2xl font-black text-slate-800 mb-2 tracking-tight">학교 정보를 동기화 중입니다</h2>
-        <p class="text-sm font-semibold text-slate-500 mb-6">교육청 서버에서 창원/마산/진해 초등학교 최신 목록을 불러옵니다.</p>
+        <p class="text-sm font-semibold text-slate-500 mb-6">교육청 서버에서 경상남도 초등학교 최신 목록을 불러옵니다.</p>
         <div class="flex gap-1.5">
             <div class="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 0s;"></div>
             <div class="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
@@ -69,7 +71,7 @@
                             <i class="fa-solid fa-spinner fa-spin"></i> 확인중...
                         </button>
                     </div>
-                    <p class="text-[10px] text-slate-500 font-medium mt-0.5">나이스(NEIS) API</p>
+                    <p class="text-[10px] text-slate-500 font-medium mt-0.5">나이스(NEIS) API - 경상남도교육청</p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
@@ -77,25 +79,44 @@
         </div>
     </header>
 
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
+    <main class="flex-grow overflow-y-auto w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
         
-        <!-- 검색 필터 섹션 -->
+        <!-- 검색 필터 섹션 (제목, 조회 버튼 제거됨) -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 no-print">
-            <h3 class="font-bold text-lg text-slate-900 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-sliders text-indigo-500"></i> 정보 상세 검색 조건
-            </h3>
-            
-            <form id="searchForm" onsubmit="event.preventDefault(); applyFilters();" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
                 
-                <!-- 지역 선택 -->
+                <!-- 지역 선택 (경남 전체 시군 확대) -->
                 <div class="flex flex-col gap-1.5 lg:col-span-1">
                     <label class="text-xs font-semibold text-slate-500">지역</label>
                     <div class="relative">
                         <i class="fa-solid fa-map-location-dot absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                         <select id="regionSelect" onchange="handleRegionChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 transition appearance-none">
-                            <option value="창원">창원</option>
-                            <option value="마산" selected>마산</option>
-                            <option value="진해">진해</option>
+                            <optgroup label="창원권">
+                                <option value="창원">창원</option>
+                                <option value="마산" selected>마산</option>
+                                <option value="진해">진해</option>
+                            </optgroup>
+                            <optgroup label="시 단위">
+                                <option value="진주">진주</option>
+                                <option value="통영">통영</option>
+                                <option value="사천">사천</option>
+                                <option value="김해">김해</option>
+                                <option value="밀양">밀양</option>
+                                <option value="거제">거제</option>
+                                <option value="양산">양산</option>
+                            </optgroup>
+                            <optgroup label="군 단위">
+                                <option value="의령">의령</option>
+                                <option value="함안">함안</option>
+                                <option value="창녕">창녕</option>
+                                <option value="고성">고성</option>
+                                <option value="남해">남해</option>
+                                <option value="하동">하동</option>
+                                <option value="산청">산청</option>
+                                <option value="함양">함양</option>
+                                <option value="거창">거창</option>
+                                <option value="합천">합천</option>
+                            </optgroup>
                         </select>
                         <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
                     </div>
@@ -140,7 +161,7 @@
                 </div>
 
                 <!-- 학년/반 -->
-                <div class="flex flex-col gap-1.5">
+                <div class="flex flex-col gap-1.5 lg:col-span-1">
                     <label class="text-xs font-semibold text-slate-500">학년/반</label>
                     <div class="flex gap-2">
                         <div class="relative w-1/2">
@@ -157,36 +178,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- 조회 버튼 -->
-                <div class="flex items-end">
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-sm">
-                        <i class="fa-solid fa-bolt text-indigo-300"></i> 조회
-                    </button>
-                </div>
-            </form>
-
-            <!-- 날짜 주간 탐색 및 기준일 선택 -->
-            <div class="mt-4 pt-4 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div class="flex items-center gap-3">
-                    <label class="text-xs font-semibold text-slate-500 whitespace-nowrap">기준 날짜 선택:</label>
-                    <div class="flex items-center gap-2">
-                        <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
-                            <button onclick="changeDate(-7)" class="p-1.5 hover:bg-white rounded-lg transition text-slate-600 hover:text-slate-900 shadow-sm" title="1주일 이전"><i class="fa-solid fa-angles-left text-xs"></i></button>
-                            <button onclick="changeDate(-1)" class="p-1.5 hover:bg-white rounded-lg transition text-slate-600 hover:text-slate-900 shadow-sm" title="하루 이전"><i class="fa-solid fa-chevron-left text-xs"></i></button>
-                            <input type="date" id="datePicker" onchange="handleDateChange()" class="bg-transparent border-none text-sm font-semibold focus:outline-none px-1 text-slate-700">
-                            <button onclick="changeDate(1)" class="p-1.5 hover:bg-white rounded-lg transition text-slate-600 hover:text-slate-900 shadow-sm" title="하루 다음"><i class="fa-solid fa-chevron-right text-xs"></i></button>
-                            <button onclick="changeDate(7)" class="p-1.5 hover:bg-white rounded-lg transition text-slate-600 hover:text-slate-900 shadow-sm" title="1주일 다음"><i class="fa-solid fa-angles-right text-xs"></i></button>
-                        </div>
-                        <button onclick="goToToday()" class="bg-white hover:bg-indigo-50 text-indigo-600 text-sm font-extrabold py-2 px-4 border border-indigo-200 rounded-xl transition shadow-sm whitespace-nowrap">오늘</button>
-                    </div>
-                </div>
-                
-                <div class="flex gap-2">
-                    <button onclick="printTimetable()" class="bg-white hover:bg-slate-50 text-slate-700 text-sm font-extrabold py-2 px-5 border border-slate-200 rounded-xl transition flex items-center gap-2 shadow-sm">
-                        <i class="fa-solid fa-print text-base"></i> 인쇄
-                    </button>
-                </div>
             </div>
         </div>
 
@@ -194,15 +185,15 @@
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
             
             <!-- 좌측: 학교 상세 정보 및 요약 정보 패널 (인쇄시 숨김) -->
-            <div class="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-slate-100 p-5 no-print sticky top-20 print-hide">
+            <div class="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-slate-100 p-5 no-print lg:sticky lg:top-0 print-hide">
                 <div class="text-center mb-5 pb-5 border-b border-slate-100">
-                    <div class="w-16 h-16 mx-auto bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center text-3xl mb-3 shadow-inner">
+                    <div onclick="fetchAndShowSchoolInfo()" class="w-16 h-16 mx-auto bg-indigo-50 hover:bg-indigo-100 text-indigo-500 rounded-full flex items-center justify-center text-3xl mb-3 shadow-inner cursor-pointer transition" title="클릭하여 학교 기본정보 보기">
                         <i class="fa-solid fa-graduation-cap"></i>
                     </div>
                     <h2 id="sideSchoolName" onclick="fetchAndShowSchoolInfo()" title="클릭하여 학교 기본정보 보기" class="font-extrabold text-lg text-slate-900 cursor-pointer hover:text-indigo-600 transition flex items-center justify-center gap-1.5">학교명 로딩중 <i class="fa-solid fa-circle-info text-xs text-slate-300"></i></h2>
                     <p id="sideGradeClass" class="text-sm font-medium text-slate-500 mt-1 bg-slate-100 inline-block px-3 py-1 rounded-full">-</p>
                     
-                    <!-- 주소 및 전화번호 추가 영역 (교무실, 행정실 개별 줄 분리) -->
+                    <!-- 주소 및 전화번호 추가 영역 -->
                     <div class="mt-4 text-left bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
                         <div class="flex items-start gap-2 text-slate-600">
                             <i class="fa-solid fa-location-dot mt-0.5 text-indigo-400 w-3 text-center text-xs"></i> 
@@ -231,35 +222,67 @@
                         </li>
                     </ul>
                     
-                    <!-- 급식정보 확인 버튼 새롭게 추가 -->
+                    <!-- 급식정보 확인 버튼 -->
                     <div class="pt-2">
-                        <button onclick="fetchAndShowMealInfo()" class="w-full bg-orange-50 hover:bg-orange-100 text-orange-700 text-xs font-bold py-2.5 px-4 rounded-xl transition duration-150 flex items-center justify-center gap-2 border border-orange-200 border-dashed shadow-sm">
+                        <button onclick="fetchAndShowMealInfo()" class="w-full bg-orange-50 hover:bg-orange-100 text-orange-700 text-xs font-bold py-3 sm:py-2.5 px-4 rounded-xl transition duration-150 flex items-center justify-center gap-2 border border-orange-200 border-dashed shadow-sm">
                             <i class="fa-solid fa-utensils"></i> 오늘의 급식 정보 보기
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- 우측: 주간 시간표 그리드 (인쇄시 전체 너비 차지) -->
+            <!-- 우측: 주간 시간표 그리드 -->
             <div class="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-slate-100 p-4 sm:p-6 overflow-hidden print-full">
                 
-                <!-- 인쇄 전용 헤더 (화면에서는 숨김, 인쇄시 표시) -->
+                <!-- 인쇄 전용 헤더 -->
                 <div class="hidden print-show text-center mb-8">
                     <h1 id="printTitle" class="text-3xl font-extrabold text-slate-900 mb-2"></h1>
                     <p id="printSubtitle" class="text-lg font-semibold text-slate-600 mb-1"></p>
                     <p id="printContact" class="text-sm font-medium text-slate-500"></p>
                 </div>
 
-                <div class="flex justify-between items-end mb-4 sm:mb-6 no-print">
+                <!-- 주간 시간표 타이틀 및 날짜 컨트롤 -->
+                <div class="flex flex-col gap-4 mb-4 sm:mb-6 no-print">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                             주간 시간표 <span id="weekRangeTitle" class="text-sm sm:text-base font-semibold text-slate-500 tracking-normal ml-2"></span>
                         </h2>
                     </div>
+                    
+                    <!-- 날짜 주간 탐색 및 기준일 선택 -->
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/60 p-2 sm:p-3 rounded-xl border border-slate-100">
+                        <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
+                            <label class="text-xs font-semibold text-slate-500 whitespace-nowrap hidden sm:block">기준 날짜 선택:</label>
+                            <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+                                    <button onclick="changeDate(-7)" class="p-1.5 hover:bg-slate-50 rounded-lg transition text-slate-600 hover:text-slate-900" title="1주일 이전"><i class="fa-solid fa-angles-left text-xs"></i></button>
+                                    <button onclick="changeDate(-1)" class="p-1.5 hover:bg-slate-50 rounded-lg transition text-slate-600 hover:text-slate-900" title="하루 이전"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                                    <input type="date" id="datePicker" onchange="handleDateChange()" class="bg-transparent border-none text-sm font-semibold focus:outline-none px-1 text-slate-700 w-32 sm:w-auto cursor-pointer">
+                                    <button onclick="changeDate(1)" class="p-1.5 hover:bg-slate-50 rounded-lg transition text-slate-600 hover:text-slate-900" title="하루 다음"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                                    <button onclick="changeDate(7)" class="p-1.5 hover:bg-slate-50 rounded-lg transition text-slate-600 hover:text-slate-900" title="1주일 다음"><i class="fa-solid fa-angles-right text-xs"></i></button>
+                                </div>
+                                <button onclick="goToToday()" class="bg-white hover:bg-indigo-50 text-indigo-600 text-sm font-extrabold py-2 px-4 border border-indigo-200 rounded-xl transition shadow-sm whitespace-nowrap">오늘</button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-2 w-full md:w-auto justify-end">
+                            <button onclick="printTimetable()" class="bg-white hover:bg-slate-50 text-slate-700 text-sm font-extrabold py-2 px-5 border border-slate-200 rounded-xl transition flex items-center justify-center gap-2 shadow-sm w-full md:w-auto">
+                                <i class="fa-solid fa-print text-base"></i> 인쇄
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="overflow-x-auto hide-scrollbar">
-                    <div id="timetableGrid" class="min-w-[600px] grid grid-cols-5 gap-2 sm:gap-4 print-grid">
+                <!-- 모바일 전용 스와이프 안내 문구 -->
+                <div class="sm:hidden flex justify-center items-center gap-2 mb-4 mt-0 text-[11px] font-bold text-indigo-500 bg-indigo-50/70 py-1.5 rounded-xl border border-indigo-100 shadow-sm">
+                    <i class="fa-solid fa-hand-point-left animate-pulse"></i>
+                    좌우로 스와이프하여 요일 이동
+                    <i class="fa-solid fa-hand-point-right animate-pulse"></i>
+                </div>
+
+                <!-- 시간표 스와이프/스크롤 컨테이너 -->
+                <div id="scrollContainer" class="overflow-x-auto hide-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 pb-4">
+                    <div id="timetableGrid" class="flex sm:grid sm:grid-cols-5 gap-3 sm:gap-4 print-grid w-max sm:w-full">
                         <!-- JS 렌더링 -->
                     </div>
                 </div>
@@ -275,39 +298,12 @@
     <!-- 푸터 -->
     <footer class="bg-slate-900 text-slate-400 text-xs py-8 mt-12 border-t border-slate-800 no-print">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center text-center gap-2">
-            <span class="text-slate-500">본 서비스는 교육청(NEIS) 공공데이터(OpenAPI)를 활용하여 창원시 실시간 학교 정보를 동기화합니다.</span>
+            <span class="text-slate-500">본 서비스는 교육청(NEIS) 공공데이터(OpenAPI)를 활용하여 실시간 학교 정보를 동기화합니다.</span>
             <span class="text-slate-600">※ 가상(모의) 데이터는 엄격히 배제되며 실제 연동 결과만 제공됩니다.</span>
         </div>
     </footer>
 
-    <!-- 모달: 수업 상세 정보 -->
-    <div id="lessonModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-opacity opacity-0 no-print">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden transform scale-95 transition-transform duration-200" id="lessonModalContent">
-            <div class="p-5 border-b border-slate-100 flex justify-between items-center relative overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 opacity-10"></div>
-                <h3 id="modalSubject" class="font-extrabold text-xl text-slate-800 relative z-10">과목</h3>
-                <button onclick="closeLessonModal()" class="text-slate-400 hover:text-slate-600 transition relative z-10 bg-white/50 rounded-full w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="p-6 space-y-5">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
-                        <i class="fa-regular fa-clock"></i>
-                    </div>
-                    <div>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">교시</p>
-                        <p id="modalPeriod" class="text-sm font-semibold text-slate-800">-</p>
-                    </div>
-                </div>
-                
-                <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                    <p class="text-xs font-bold text-indigo-500 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-book-open"></i> 수업 내용</p>
-                    <p id="modalContent" class="text-sm text-slate-700 leading-relaxed font-medium">-</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 모달: 급식 정보 명세 (새로 추가됨) -->
+    <!-- 모달: 급식 정보 명세 -->
     <div id="mealInfoModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-opacity opacity-0 no-print">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform scale-95 transition-transform duration-200 flex flex-col max-h-[80vh]" id="mealInfoModalContent">
             <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-orange-500 text-white">
@@ -326,7 +322,6 @@
                     <!-- 급식 정보가 동적으로 로딩됩니다 -->
                 </div>
 
-                <!-- 추가된 급식 식단 알레르기 및 설명 안내문 -->
                 <div class="mt-6 bg-orange-50 border border-orange-100 rounded-xl p-5 text-sm text-orange-800 leading-relaxed shadow-sm">
                     <p class="font-bold text-base mb-2"><i class="fa-solid fa-circle-info"></i> 급식 식단 안내</p>
                     <p class="mb-2">학교에서 제공하는 현재년도 급식의 요리명, 원산지정보, 칼로리정보, 영양정보 등의 일자별 현황입니다.</p>
@@ -347,7 +342,7 @@
         <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden transform scale-95 transition-transform duration-200 flex flex-col max-h-[85vh]" id="schoolInfoModalContent">
             <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-indigo-600 text-white">
                 <h3 class="font-bold text-xl flex items-center gap-2">
-                    <i class="fa-solid fa-building-columns"></i> NEIS 학교 기본정보 명세
+                    <i class="fa-solid fa-building-columns"></i> 학교 기본 정보 개요
                 </h3>
                 <button onclick="closeSchoolInfoModal()" class="text-indigo-200 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
@@ -371,8 +366,9 @@
         /* ==============================================
          * 1. 상태 및 상수 데이터 관리
          * ============================================== */
-        // 기본값 (API 로딩 실패 시 사용되는 최소한의 백업 데이터)
-        let REGIONS = { "창원": [], "마산": [], "진해": [] };
+        const ALL_REGION_NAMES = ["창원", "마산", "진해", "진주", "통영", "사천", "김해", "밀양", "거제", "양산", "의령", "함안", "창녕", "고성", "남해", "하동", "산청", "함양", "거창", "합천"];
+        let REGIONS = {};
+        ALL_REGION_NAMES.forEach(r => REGIONS[r] = []);
         let SCHOOLS_DB = {};
 
         const state = {
@@ -380,14 +376,14 @@
             school: "",
             year: "2025",
             semester: "1",
-            grade: "1", // 기본값 최저학년
+            grade: "1", 
             class: "",
-            date: "", // YYYY-MM-DD
+            date: "", 
             apiKey: "89f71f30a00545d2b8fc928abf0fcaee",
             gradeClassMap: {} 
         };
 
-        let currentRenderId = 0; // 비동기 충돌 방지 식별자
+        let currentRenderId = 0; 
 
         const subjectColors = {
             "국어": "bg-red-50 text-red-600 border-red-100",
@@ -530,7 +526,7 @@
         }
 
         /* ==============================================
-         * 4. API 통신 로직 (모든 학교 실시간 동적 로딩)
+         * 4. API 통신 로직
          * ============================================== */
          
         async function loadDynamicSchools() {
@@ -542,16 +538,29 @@
 
                 if (data.schoolInfo && data.schoolInfo[1] && data.schoolInfo[1].row) {
                     const rows = data.schoolInfo[1].row;
-                    let newRegions = { "창원": [], "마산": [], "진해": [] };
+                    let newRegions = {};
+                    ALL_REGION_NAMES.forEach(r => newRegions[r] = []);
                     let newDb = {};
 
                     for (let row of rows) {
                         const addr = row.ORG_RDNMA || "";
+                        let region = "";
+
                         if (addr.includes("창원시")) {
-                            let region = "창원";
                             if (addr.includes("마산합포구") || addr.includes("마산회원구")) region = "마산";
                             else if (addr.includes("진해구")) region = "진해";
+                            else region = "창원";
+                        } else {
+                            for (const r of ALL_REGION_NAMES) {
+                                if (r === "창원" || r === "마산" || r === "진해") continue;
+                                if (addr.includes(r + "시") || addr.includes(r + "군")) {
+                                    region = r;
+                                    break;
+                                }
+                            }
+                        }
 
+                        if (region) {
                             let displayName = row.SCHUL_NM;
                             if (region === "마산") {
                                 if (displayName === "마산완월초등학교") displayName = "완월초등학교";
@@ -571,9 +580,7 @@
                         }
                     }
 
-                    newRegions["창원"].sort();
-                    newRegions["마산"].sort();
-                    newRegions["진해"].sort();
+                    ALL_REGION_NAMES.forEach(r => newRegions[r].sort());
 
                     REGIONS = newRegions;
                     SCHOOLS_DB = newDb;
@@ -585,7 +592,6 @@
             return false;
         }
 
-        // NEIS 1: 시간표
         async function fetchNeisTimetable(year, sem, dateStr, grade, classNm) {
             if (!state.apiKey || !classNm || !state.school) return null;
             const schoolInfo = SCHOOLS_DB[`${state.region}_${state.school}`];
@@ -609,7 +615,6 @@
             }
         }
 
-        // NEIS 2: 학교 기본정보
         async function fetchNeisSchoolInfoAPI() {
             if (!state.apiKey || !state.school) return null;
             const schoolInfo = SCHOOLS_DB[`${state.region}_${state.school}`];
@@ -636,7 +641,6 @@
             }
         }
 
-        // NEIS 3: 학사일정
         async function fetchNeisSchedule(schoolInfo, fromDate, toDate) {
             if (!state.apiKey || !schoolInfo) return {};
             const fromYmd = fromDate.replace(/-/g, "");
@@ -665,7 +669,7 @@
         }
 
         /* ==============================================
-         * 5. UI 렌더링 로직 (학년/반 동적 생성 포함)
+         * 5. UI 렌더링 로직
          * ============================================== */
 
         async function fetchAndUpdateSchoolStructure(forceLowestGrade = false) {
@@ -817,22 +821,41 @@
                 if (currentRenderId !== renderId) return;
 
                 const col = document.createElement("div");
-                col.className = "flex flex-col gap-2 min-w-[110px]";
+                // 모바일 환경을 위한 너비 조정 (80vw로 화면을 꽉 채우되 스와이프 가능)
+                col.className = "flex flex-col gap-2 w-[80vw] max-w-[280px] sm:w-auto sm:max-w-none flex-shrink-0 snap-center";
                 
                 const isSelectedDate = dayInfo.dateStr === state.date;
+                if (isSelectedDate) col.id = "todayColumn"; // 자동 스크롤을 위한 ID 부여
+
                 const headerBg = isSelectedDate ? "bg-indigo-600 text-white shadow-md ring-2 ring-indigo-300 ring-offset-1 border-indigo-600" : "bg-slate-700 text-white border-slate-700";
                 
                 const headerDiv = document.createElement("div");
-                headerDiv.className = `${headerBg} rounded-xl p-2 sm:p-3 text-center border`;
+                headerDiv.className = `${headerBg} rounded-xl p-3 sm:p-3 text-center border`;
                 headerDiv.innerHTML = `
-                    <p class="font-extrabold text-sm sm:text-base">${dayInfo.dayName}요일</p>
-                    <p class="text-[10px] sm:text-xs font-medium opacity-80 mt-0.5">${dayInfo.dateStr.substring(5).replace('-','.')}</p>
+                    <p class="font-extrabold text-base sm:text-base">${dayInfo.dayName}요일</p>
+                    <p class="text-sm font-bold opacity-90 mt-0.5">${dayInfo.dateStr.substring(5).replace('-','.')}</p>
                 `;
 
                 const eventName = scheduleMap[dayInfo.dateStr] ? scheduleMap[dayInfo.dateStr].join(', ') : '';
                 const scheduleDiv = document.createElement("div");
-                scheduleDiv.className = "bg-emerald-50 text-emerald-700 text-[10px] sm:text-xs font-bold p-1.5 sm:p-2 rounded-xl text-center border border-emerald-200 min-h-[36px] flex items-center justify-center break-keep leading-tight shadow-sm";
-                scheduleDiv.innerHTML = eventName ? `<i class="fa-solid fa-flag text-emerald-500 mr-1"></i> ${eventName}` : `<span class="text-transparent">-</span>`;
+                
+                let isHoliday = false; // 공휴일/휴업일 감지 변수
+                
+                if (eventName) {
+                    const isHolidayRegex = /휴업|방학|공휴|휴일|광복절|개천절|한글날|설날|추석|현충일|어린이날|성탄절|크리스마스|기념일|대체휴|선거/i;
+                    isHoliday = isHolidayRegex.test(eventName);
+                    
+                    if (isHoliday) {
+                        scheduleDiv.className = "bg-red-50 text-red-700 text-xs font-bold p-2 sm:p-2 rounded-xl text-center border border-red-200 min-h-[40px] sm:min-h-[36px] flex items-center justify-center break-keep leading-tight shadow-sm";
+                        scheduleDiv.innerHTML = `<i class="fa-solid fa-calendar-xmark text-red-500 mr-1"></i> ${eventName}`;
+                    } else {
+                        scheduleDiv.className = "bg-emerald-50 text-emerald-700 text-xs font-bold p-2 sm:p-2 rounded-xl text-center border border-emerald-200 min-h-[40px] sm:min-h-[36px] flex items-center justify-center break-keep leading-tight shadow-sm";
+                        scheduleDiv.innerHTML = `<i class="fa-solid fa-flag text-emerald-500 mr-1"></i> ${eventName}`;
+                    }
+                } else {
+                    scheduleDiv.className = "bg-slate-50/50 text-xs p-2 sm:p-2 rounded-xl text-center border border-dashed border-slate-200 min-h-[40px] sm:min-h-[36px] flex items-center justify-center";
+                    scheduleDiv.innerHTML = `<span class="text-transparent">-</span>`;
+                }
 
                 const colContainer = document.createElement("div");
                 colContainer.className = "flex flex-col gap-2 flex-grow";
@@ -869,19 +892,34 @@
 
                     const card = document.createElement("div");
                     
-                    if (lessonData.isEmpty) {
-                        card.className = "border rounded-xl px-2 py-1.5 sm:px-3 sm:py-2 border-dashed border-slate-200 bg-slate-50/40 min-h-[76px] h-full";
+                    if (isHoliday) {
+                        // 공휴일/휴업일인 경우: 1~6교시 카드를 모두 빨간색 테마로 강제 지정
+                        const subjectText = lessonData.isEmpty ? "-" : lessonData.subject;
+                        card.className = "border rounded-xl px-2 py-2 sm:px-2 sm:py-1.5 relative shadow-sm h-full flex flex-col bg-red-50 border-red-200 text-red-700";
+                        card.innerHTML = `
+                            <div class="flex justify-between items-start mb-1 sm:mb-1">
+                                <span class="text-sm font-black text-red-800 bg-white/80 px-2 py-0.5 rounded-lg shadow-sm border border-red-100">${p}교시</span>
+                                ${lessonData.type === 'API연동' ? '<i class="fa-solid fa-link text-[10px] sm:text-[8px] opacity-40 mt-1 sm:mt-0"></i>' : ''}
+                            </div>
+                            <div class="text-center flex-grow flex items-center justify-center py-1 sm:py-1">
+                                <h4 class="font-extrabold text-xl sm:text-lg tracking-tight opacity-70">${subjectText}</h4>
+                            </div>
+                        `;
+                    } else if (lessonData.isEmpty) {
+                        // 모바일 및 PC 환경에서 빈 칸 높이 및 상하 여백 축소
+                        card.className = "border rounded-xl px-2 py-2 sm:px-2 sm:py-1.5 border-dashed border-slate-200 bg-slate-50/40 min-h-[76px] sm:min-h-[64px] h-full flex flex-col items-center justify-center";
                     } else {
                         const colorClass = subjectColors[lessonData.subject] || "bg-slate-50 text-slate-700 border-slate-200";
-                        card.className = `border rounded-xl px-2 py-1.5 sm:px-3 sm:py-2 relative shadow-sm h-full ${colorClass}`;
+                        card.className = `border rounded-xl px-2 py-2 sm:px-2 sm:py-1.5 relative shadow-sm h-full flex flex-col ${colorClass}`;
                         
+                        // 간격(mb, py)을 줄여 전체적인 카드의 세로 크기를 좁게 설정
                         card.innerHTML = `
-                            <div class="flex justify-between items-start mb-1.5">
-                                <span class="text-xs sm:text-sm font-black text-slate-800 bg-white/80 px-2.5 py-0.5 rounded-lg shadow-sm border border-slate-100">${p}교시</span>
-                                ${lessonData.type === 'API연동' ? '<i class="fa-solid fa-link text-[8px] opacity-40"></i>' : ''}
+                            <div class="flex justify-between items-start mb-1 sm:mb-1">
+                                <span class="text-sm font-black text-slate-800 bg-white/80 px-2 py-0.5 rounded-lg shadow-sm border border-slate-100">${p}교시</span>
+                                ${lessonData.type === 'API연동' ? '<i class="fa-solid fa-link text-[10px] sm:text-[8px] opacity-40 mt-1 sm:mt-0"></i>' : ''}
                             </div>
-                            <div class="text-center py-1 sm:py-1.5">
-                                <h4 class="font-extrabold text-sm sm:text-lg tracking-tight">${lessonData.subject}</h4>
+                            <div class="text-center flex-grow flex items-center justify-center py-1 sm:py-1">
+                                <h4 class="font-extrabold text-xl sm:text-lg tracking-tight">${lessonData.subject}</h4>
                             </div>
                         `;
                     }
@@ -890,6 +928,15 @@
             }
             if (currentRenderId === renderId) {
                 document.getElementById("loadingIndicator").classList.add("hidden");
+                
+                // 모바일 환경일 경우 렌더링 완료 후 선택된 요일로 자동 스크롤(스냅) 처리
+                setTimeout(() => {
+                    const todayCol = document.getElementById("todayColumn");
+                    const scrollContainer = document.getElementById("scrollContainer");
+                    if (todayCol && scrollContainer && window.innerWidth < 640) {
+                        todayCol.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                    }
+                }, 150);
             }
         }
 
@@ -950,16 +997,16 @@
             
             // 주말 건너뛰기 로직 (하루 단위 이동일 때만 적용)
             if (days === 1) {
-                if (current.getDay() === 5) { // 금요일에서 다음으로 이동 시
-                    days = 3; // 토, 일 건너뛰고 월요일(+3일)
-                } else if (current.getDay() === 6) { // 토요일인 경우
-                    days = 2; // 일 건너뛰고 월요일(+2일)
+                if (current.getDay() === 5) {
+                    days = 3;
+                } else if (current.getDay() === 6) {
+                    days = 2;
                 }
             } else if (days === -1) {
-                if (current.getDay() === 1) { // 월요일에서 이전으로 이동 시
-                    days = -3; // 일, 토 건너뛰고 금요일(-3일)
-                } else if (current.getDay() === 0) { // 일요일인 경우
-                    days = -2; // 토 건너뛰고 금요일(-2일)
+                if (current.getDay() === 1) {
+                    days = -3;
+                } else if (current.getDay() === 0) {
+                    days = -2;
                 }
             }
 
@@ -1016,20 +1063,7 @@
             showToast("오늘 날짜로 이동했습니다.", "success");
         }
 
-        async function applyFilters() {
-            state.region = document.getElementById("regionSelect").value;
-            state.school = document.getElementById("schoolSelect").value;
-            state.year = document.getElementById("yearSelect").value;
-            state.semester = document.getElementById("semesterSelect").value;
-            state.grade = document.getElementById("gradeSelect").value;
-            state.class = document.getElementById("classSelect").value;
-
-            await renderTimetable();
-            showToast("선택하신 조건으로 시간표가 갱신되었습니다.", "success");
-        }
-
         function printTimetable() {
-            // iframe 환경 지원 및 브라우저 렌더링 지연시간 고려
             window.focus();
             setTimeout(() => {
                 try {
@@ -1204,10 +1238,27 @@
             setTimeout(() => { modal.classList.add("hidden"); modal.classList.remove("flex"); }, 200);
         }
 
+        // 수동 설정 저장 함수 (학교저장 버튼 클릭 시 호출)
+        function saveCurrentSchool() {
+            localStorage.setItem("neis_saved_region", state.region);
+            localStorage.setItem("neis_saved_school", state.school);
+            localStorage.setItem("neis_saved_grade", state.grade);
+            localStorage.setItem("neis_saved_class", state.class);
+            showToast(`[${state.school}]이(가) 다음 접속 시 기본값으로 저장되었습니다.`, "success");
+        }
+
         // 초기화
         window.onload = async function() {
             const storedNeis = localStorage.getItem("neis_timetable_apikey");
             if (storedNeis !== null && storedNeis !== "") state.apiKey = storedNeis;
+
+            // 로컬 스토리지에서 저장된 설정값 불러오기
+            const savedRegion = localStorage.getItem("neis_saved_region");
+            const savedSchool = localStorage.getItem("neis_saved_school");
+            const savedGrade = localStorage.getItem("neis_saved_grade");
+            const savedClass = localStorage.getItem("neis_saved_class");
+
+            if (savedRegion && ALL_REGION_NAMES.includes(savedRegion)) state.region = savedRegion;
 
             await loadDynamicSchools();
 
@@ -1218,27 +1269,36 @@
             document.getElementById("regionSelect").value = state.region;
             populateSchoolSelect(state.region);
             
-            if (!REGIONS[state.region].includes("마산중앙초등학교")) {
+            // 저장된 학교가 현재 지역에 존재하면 복원, 아니면 첫 번째 학교 선택
+            if (savedSchool && REGIONS[state.region].includes(savedSchool)) {
+                state.school = savedSchool;
+            } else if (!REGIONS[state.region].includes("마산중앙초등학교") || state.region !== "마산") {
                 state.school = REGIONS[state.region][0] || "";
             } else {
                 state.school = "마산중앙초등학교";
             }
             document.getElementById("schoolSelect").value = state.school;
 
+            // 학년, 반 복원 준비
+            if (savedGrade) state.grade = savedGrade;
+            if (savedClass) state.class = savedClass;
+
             state.date = getFormattedDate(new Date());
             document.getElementById("datePicker").value = state.date;
             
             const autoInfo = autoDetermineYearSemester(state.date);
             
-            // 상태 변수에 현재 연도와 학기를 반드시 동기화하여 초기 조회 시 데이터 유실 방지
             state.year = autoInfo.academicYear;
             state.semester = autoInfo.semester;
             document.getElementById("yearSelect").value = state.year;
             document.getElementById("semesterSelect").value = state.semester;
 
             await checkApiConnection(); 
-            await fetchAndUpdateSchoolStructure(true); 
+            // false 인자를 주어 강제로 1학년으로 덮어쓰지 않고 저장된 학년을 유지하도록 함
+            await fetchAndUpdateSchoolStructure(false); 
             await renderTimetable();
+            
+            // 실시간 저장(캐싱) 로직은 요청에 따라 제거됨
         };
     </script>
 </body>
