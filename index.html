@@ -12,22 +12,45 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* 인쇄 최적화 CSS */
+        /* 인쇄 최적화 CSS (1페이지 맞춤 비율 조정) */
         @media print {
-            @page { size: A4 landscape; margin: 10mm; }
+            @page { size: A4 landscape; margin: 8mm; }
             .no-print { display: none !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            body { background-color: white; }
+            body, main { background-color: white !important; height: auto !important; overflow: visible !important; display: block !important; flex-grow: 0 !important; }
             
-            /* 불필요한 패널 숨기기 및 여백 제거 */
+            /* 불필요한 패널 숨기기 및 영역 전체 사용 */
             .print-hide { display: none !important; }
             .print-full { grid-column: 1 / -1 !important; width: 100% !important; border: none !important; box-shadow: none !important; padding: 0 !important; overflow: visible !important; }
             
-            /* 시간표 그리드가 화면을 꽉 채우도록 설정 */
-            .overflow-x-auto, .overflow-hidden { overflow: visible !important; }
-            .print-grid { display: flex !important; width: 100% !important; gap: 8px !important; min-width: auto !important; }
-            .print-grid > div { flex: 1; min-width: 0 !important; }
-            .print-show { display: block !important; }
+            /* 스크롤 제거 및 컨테이너 확장 */
+            .overflow-x-auto, .overflow-hidden, #scrollContainer { overflow: visible !important; height: auto !important; padding-bottom: 0 !important; }
+            
+            /* 인쇄용 상단 타이틀 여백 대폭 축소 */
+            .print-show { display: block !important; margin-bottom: 15px !important; }
+            #printTitle { font-size: 22pt !important; margin-bottom: 2px !important; }
+            #printSubtitle { font-size: 11pt !important; margin-bottom: 2px !important; }
+            #printContact { font-size: 9pt !important; }
+
+            /* 시간표 그리드 간격 축소 */
+            .print-grid { display: flex !important; width: 100% !important; gap: 6px !important; min-width: auto !important; }
+            .print-grid > div { flex: 1; min-width: 0 !important; gap: 4px !important; } /* 열 사이, 열 내부 간격 축소 */
+            
+            /* 요일 헤더 및 학사일정 띠 여백/글자크기 축소 */
+            .print-grid > div > div:nth-child(1) { padding: 4px !important; }
+            .print-grid > div > div:nth-child(1) p:first-child { font-size: 12pt !important; }
+            .print-grid > div > div:nth-child(1) p:last-child { font-size: 9pt !important; margin-top: 0 !important; }
+            .print-grid > div > div:nth-child(2) { min-height: 20px !important; padding: 2px !important; font-size: 8pt !important; }
+            
+            /* 개별 시간표 카드 컨테이너 및 카드 내부 축소 (핵심) */
+            .print-grid > div > div:nth-child(3) { gap: 4px !important; } /* 1~6교시 카드 사이 간격 */
+            .print-grid > div > div:nth-child(3) > div { 
+                min-height: auto !important; /* 강제 높이 제한 해제 */
+                padding: 4px 6px !important; /* 내부 패딩 축소 */
+            }
+            .print-grid > div > div:nth-child(3) > div > div:first-child { margin-bottom: 0 !important; } /* 교시 텍스트 아래 여백 제거 */
+            .print-grid > div > div:nth-child(3) > div h4 { font-size: 14pt !important; padding: 2px 0 !important; } /* 과목명 폰트 크기 및 여백 조정 */
+            .print-grid > div > div:nth-child(3) > div span { font-size: 8pt !important; padding: 1px 4px !important; } /* 교시 뱃지 축소 */
         }
         
         @keyframes slideInUp {
@@ -79,8 +102,12 @@
                 <div id="savedSchoolBadge" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-50 text-slate-500 rounded-lg text-xs font-semibold border border-slate-200 transition-colors">
                     <i class="fa-solid fa-house"></i> <span id="savedSchoolNameDisplay">저장 안 됨</span>
                 </div>
-                <button onclick="saveCurrentSchool()" class="flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-3 py-1.5 rounded-lg text-sm font-bold transition border border-indigo-100 shadow-sm" title="현재 선택된 지역과 학교를 다음 접속 시 기본값으로 저장합니다.">
+                <button onclick="saveCurrentSchool()" class="flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-3 py-1.5 rounded-lg text-sm font-bold transition border border-indigo-100 shadow-sm" title="현재 학교 기본값으로 저장">
                     <i class="fa-solid fa-bookmark"></i> <span class="hidden sm:inline">학교저장</span>
+                </button>
+                <!-- API 키 설정 버튼 추가 -->
+                <button onclick="openApiSettingsModal()" class="flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-500 px-3 py-1.5 rounded-lg text-sm transition border border-slate-200 shadow-sm" title="NEIS API 설정">
+                    <i class="fa-solid fa-gear"></i>
                 </button>
             </div>
         </div>
@@ -352,6 +379,34 @@
             </div>
             <div class="p-4 border-t border-slate-100 bg-white flex justify-end">
                 <button onclick="closeSchoolInfoModal()" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 모달: API 설정 -->
+    <div id="apiSettingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-opacity opacity-0 no-print">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform scale-95 transition-transform duration-200 flex flex-col" id="apiSettingsModalContent">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-800 text-white">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-key"></i> 나이스 OpenAPI 키 설정
+                </h3>
+                <button onclick="closeApiSettingsModal()" class="text-slate-300 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 bg-slate-50">
+                <p class="text-sm text-slate-600 mb-4 break-keep leading-relaxed">
+                    공용 키는 일일 호출 한도(1,000회)가 초과되면 데이터가 보이지 않습니다. 안정적인 사용을 위해 <strong>나이스 교육정보 개방포털</strong>에서 무료로 개인 키를 발급받아 입력해 주세요.
+                </p>
+                <div class="flex flex-col gap-2 mb-2">
+                    <label class="text-xs font-bold text-slate-500">내 API KEY 입력</label>
+                    <input type="text" id="apiKeyInput" placeholder="발급받은 32자리 인증키 입력" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                </div>
+                <div class="text-right mb-4">
+                    <a href="https://open.neis.go.kr/portal/guide/useGuidePage.do" target="_blank" class="text-xs text-indigo-500 hover:underline font-medium"><i class="fa-solid fa-arrow-up-right-from-square"></i> 키 발급 안내 페이지 열기</a>
+                </div>
+            </div>
+            <div class="p-4 border-t border-slate-100 bg-white flex justify-end gap-2">
+                <button onclick="closeApiSettingsModal()" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">취소</button>
+                <button onclick="saveApiKey()" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition shadow-sm">저장 후 새로고침</button>
             </div>
         </div>
     </div>
@@ -1095,20 +1150,33 @@
                 grid.innerHTML = `<div class="col-span-1 sm:col-span-2 p-5 text-center text-slate-500 bg-slate-100/50 rounded-xl font-medium border border-slate-200">데이터가 없습니다.</div>`;
                 return;
             }
+
+            // 날짜 포맷 변환 함수 (YYYYMMDD -> YYYY년 MM월 DD일)
+            const formatDate = (dateStr) => {
+                if (!dateStr || dateStr.length !== 8) return "-";
+                return `${dateStr.substring(0,4)}년 ${dateStr.substring(4,6)}월 ${dateStr.substring(6,8)}일`;
+            };
             
+            // 최대한 많은 정보를 담도록 필드 확장
             const fields = [
-                { label: "시도교육청명", value: info.ATPT_OFCDC_SC_NM },
+                { label: "시도교육청", value: info.ATPT_OFCDC_SC_NM },
+                { label: "관할 교육지원청", value: info.JU_ORG_NM || info.LCTN_SC_NM },
                 { label: "학교명", value: info.SCHUL_NM },
-                { label: "설립명", value: info.FOND_SC_NM },
-                { label: "도로명주소", value: info.ORG_RDNMA },
-                { label: "전화번호", value: info.ORG_TELNO },
-                { label: "홈페이지", value: info.HMPG_ADRES ? `<a href="${info.HMPG_ADRES}" target="_blank" class="text-indigo-500 hover:underline">링크 열기</a>` : "-" }
+                { label: "영문학교명", value: info.ENG_SCHUL_NM },
+                { label: "설립 구분", value: info.FOND_SC_NM },
+                { label: "남녀공학 구분", value: info.COEDU_SC_NM },
+                { label: "도로명주소", value: `${info.ORG_RDNMA || ''} ${info.ORG_RDNDA || ''}`.trim() },
+                { label: "홈페이지", value: info.HMPG_ADRES ? `<a href="${info.HMPG_ADRES}" target="_blank" class="text-indigo-500 hover:underline">링크 열기 <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>` : "-" },
+                { label: "교무실 전화", value: info.ORG_TELNO },
+                { label: "팩스번호", value: info.ORG_FAXNO },
+                { label: "설립일자", value: formatDate(info.FOND_YMD) },
+                { label: "개교기념일", value: formatDate(info.FOAS_MEMRD) }
             ];
 
             fields.forEach(f => {
                 const item = document.createElement("div");
                 item.className = "bg-white p-4 rounded-xl border border-slate-200 shadow-sm";
-                item.innerHTML = `<p class="text-xs font-bold text-slate-400 mb-1.5">${f.label}</p><p class="text-base font-semibold text-slate-800 break-all">${f.value || "-"}</p>`;
+                item.innerHTML = `<p class="text-xs font-bold text-slate-400 mb-1.5">${f.label}</p><p class="text-sm font-semibold text-slate-800 break-all">${f.value || "-"}</p>`;
                 grid.appendChild(item);
             });
         }
@@ -1146,6 +1214,38 @@
             localStorage.setItem("neis_saved_class", state.class);
             showToast(`[${state.school}]이(가) 다음 접속 시 기본값으로 저장되었습니다.`, "success");
             updateSavedSchoolDisplay();
+        }
+
+        // API 설정 모달 제어
+        function openApiSettingsModal() {
+            const modal = document.getElementById("apiSettingsModal");
+            const content = document.getElementById("apiSettingsModalContent");
+            document.getElementById("apiKeyInput").value = state.apiKey !== "89f71f30a00545d2b8fc928abf0fcaee" ? state.apiKey : "";
+            
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+            setTimeout(() => { modal.classList.remove("opacity-0"); content.classList.remove("scale-95"); }, 10);
+        }
+
+        function closeApiSettingsModal() {
+            const modal = document.getElementById("apiSettingsModal");
+            const content = document.getElementById("apiSettingsModalContent");
+            modal.classList.add("opacity-0"); content.classList.add("scale-95");
+            setTimeout(() => { modal.classList.add("hidden"); modal.classList.remove("flex"); }, 200);
+        }
+
+        function saveApiKey() {
+            const newKey = document.getElementById("apiKeyInput").value.trim();
+            if (newKey) {
+                localStorage.setItem("neis_timetable_apikey", newKey);
+                state.apiKey = newKey;
+            } else {
+                localStorage.removeItem("neis_timetable_apikey");
+                state.apiKey = "89f71f30a00545d2b8fc928abf0fcaee"; // 기본 공용키 복원
+            }
+            closeApiSettingsModal();
+            showToast("API 키가 저장되었습니다. 데이터를 다시 불러옵니다.", "success");
+            setTimeout(() => location.reload(), 800);
         }
 
         // 초기 렌더링 설정
